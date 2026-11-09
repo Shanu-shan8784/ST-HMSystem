@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏨 Hostel & 🚌 Transport Management System (MERN Stack)
 
 A full-stack, enterprise-grade **Hostel & Transport Management System** built with **MongoDB, Express.js, React 19, and Node.js**, styled with modern **Tailwind CSS**, featuring dynamic **Dark Mode** toggle, role-based access control, interactive **Leaflet.js** live GPS fleet tracking, visual room matrix grids, student outpass workflows, complaint tracking, and online fee billing.
@@ -167,3 +168,7 @@ Open your browser at `http://localhost:5173`.
 ## 🎨 Dark Mode
 Toggle dark mode anytime using the **Sun / Moon** icon in the top header navbar. The application immediately adapts text, backgrounds, cards, borders, and modal dialogs with smooth transitions.
 
+=======
+# ST-HMSystem
+Semester 6 final project
+>>>>>>> ddb8efd792dd8aebaca98471e19519bed5e65a61
