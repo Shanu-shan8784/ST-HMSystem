@@ -3,6 +3,7 @@ import { hostelService } from '../../services/hostelService';
 import { useAuth } from '../../context/AuthContext';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import { toast } from 'react-toastify';
 import {
   AlertCircle,
   PlusCircle,
@@ -86,7 +87,7 @@ const Complaints = () => {
         fetchComplaints();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 
@@ -104,7 +105,7 @@ const Complaints = () => {
         fetchComplaints();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 

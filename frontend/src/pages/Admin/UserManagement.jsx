@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import authService from '../../services/authService';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import { toast } from 'react-toastify';
 import {
   UserPlus,
   Trash2,
@@ -121,7 +122,7 @@ const UserManagement = () => {
         await authService.deleteUser(id);
         fetchData();
       } catch (err) {
-        alert(err.response?.data?.message || err.message);
+        toast.error(err.response?.data?.message || err.message);
       }
     }
   };
@@ -135,7 +136,7 @@ const UserManagement = () => {
         fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 
@@ -151,7 +152,7 @@ const UserManagement = () => {
         fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 

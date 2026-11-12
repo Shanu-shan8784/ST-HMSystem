@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { hostelService } from '../../services/hostelService';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import { toast } from 'react-toastify';
 import {
   FileText,
   CheckCircle,
@@ -69,7 +70,7 @@ const LeaveRequests = () => {
         fetchRequests();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { transportService } from '../../services/transportService';
+import { toast } from 'react-toastify';
 import {
   Bus,
   MapPin,
@@ -65,7 +66,7 @@ const TransportDashboard = () => {
         fetchTransportData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 

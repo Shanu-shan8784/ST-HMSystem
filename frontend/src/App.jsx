@@ -6,10 +6,10 @@ import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import UserManagement from './pages/admin/UserManagement';
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import UserManagement from './pages/Admin/UserManagement';
 import WardenDashboard from './pages/warden/WardenDashboard';
 import RoomAllocation from './pages/warden/RoomAllocation';
 import LeaveRequests from './pages/warden/LeaveRequests';

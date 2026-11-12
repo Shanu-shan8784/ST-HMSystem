@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth, demoCredentials } from '../../context/AuthContext';
-import { Building2, Lock, Mail, AlertCircle, ArrowRight, Sparkles, Shield, User, Bus } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import {
+  Building2,
+  Lock,
+  Mail,
+  AlertCircle,
+  ArrowRight,
+  Shield,
+  User,
+  Bus,
+} from 'lucide-react';
 
 const Login = () => {
-  const [email, setEmail] = useState('admin@hostel.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('admin');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,83 +22,87 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleRoleTabClick = (roleKey) => {
-    setSelectedRole(roleKey);
-    const demo = demoCredentials[roleKey];
-    if (demo) {
-      setEmail(demo.email);
-      setPassword(demo.password);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       setError('Please fill in both email and password.');
       return;
     }
 
     setIsSubmitting(true);
-    const result = await login(email, password);
-    setIsSubmitting(false);
 
-    if (result.success) {
-      const userRole = result.user?.role;
+    try {
+      const result = await login(email.trim(), password);
+
+      if (!result.success) {
+        setError(result.message || 'Invalid email or password.');
+        return;
+      }
+
+      // Use the role returned by the backend, not the selected tab.
+      const userRole = result.user?.role?.toLowerCase();
+
       if (userRole === 'admin') navigate('/admin/dashboard');
       else if (userRole === 'warden') navigate('/warden/dashboard');
       else if (userRole === 'driver') navigate('/transport/dashboard');
       else navigate('/student/dashboard');
-    } else {
-      setError(result.message || 'Invalid credentials.');
+    } catch {
+      setError('Login failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const roles = [
+    { id: 'admin', label: 'Admin', icon: Shield },
+    { id: 'warden', label: 'Warden', icon: Building2 },
+    { id: 'driver', label: 'Driver', icon: Bus },
+    { id: 'student', label: 'Student', icon: User },
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 transition-colors">
       <div className="w-full max-w-md">
-        {/* Top Header Card */}
         <div className="text-center mb-8">
           <div className="inline-flex p-3 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 mb-3">
             <Building2 className="w-8 h-8" />
           </div>
+
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Hostel & Transport Portal
+            Hostel &amp; Transport Portal
           </h1>
+
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Sign in to access your role-based dashboard
+            Sign in to access your dashboard
           </p>
         </div>
 
-        {/* Main Box */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none">
-          {/* Role Selector Tabs */}
           <div className="mb-6">
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-              Select Role / Quick Demo Login
+              Select Role
             </label>
+
             <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
-              {[
-                { id: 'admin', label: 'Admin', icon: Shield },
-                { id: 'warden', label: 'Warden', icon: Building2 },
-                { id: 'driver', label: 'Driver', icon: Bus },
-                { id: 'student', label: 'Student', icon: User },
-              ].map((tab) => {
-                const Icon = tab.icon;
+              {roles.map((role) => {
+                const Icon = role.icon;
+
                 return (
                   <button
-                    key={tab.id}
+                    key={role.id}
                     type="button"
-                    onClick={() => handleRoleTabClick(tab.id)}
+                    onClick={() => setSelectedRole(role.id)}
+                    aria-pressed={selectedRole === role.id}
                     className={`flex flex-col items-center py-2 px-1 rounded-xl text-xs font-semibold transition-all ${
-                      selectedRole === tab.id
+                      selectedRole === role.id
                         ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <Icon className="w-4 h-4 mb-1" />
-                    <span>{tab.label}</span>
+                    <span>{role.label}</span>
                   </button>
                 );
               })}
@@ -105,13 +118,19 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label
+                htmlFor="email"
+                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
+              >
                 Email Address
               </label>
+
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <input
+                  id="email"
                   type="email"
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@hostel.com"
@@ -122,31 +141,26 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label
+                htmlFor="password"
+                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
+              >
                 Password
               </label>
+
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <input
+                  id="password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   required
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            </div>
-
-            {/* Quick prefill tip */}
-            <div className="p-2.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-[11px] text-blue-800 dark:text-blue-300 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                Demo Credentials Loaded
-              </span>
-              <span className="font-mono text-[10px] bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
-                {password}
-              </span>
             </div>
 
             <button
@@ -158,14 +172,13 @@ const Login = () => {
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Sign In as {selectedRole.toUpperCase()}</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Bottom link to Register */}
           <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800 text-center">
             <p className="text-xs text-slate-500 dark:text-slate-400">
               New student or parent?{' '}

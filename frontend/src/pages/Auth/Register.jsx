@@ -120,7 +120,7 @@ const Register = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="e.g. Aarav Patel"
+                        placeholder="e.g. Ali Ahmed"
                         required
                         className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -138,7 +138,7 @@ const Register = () => {
                         name="rollNumber"
                         value={formData.rollNumber}
                         onChange={handleChange}
-                        placeholder="STU-2026-001"
+                        placeholder="uobsac-2024-920"
                         required
                         className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -157,7 +157,7 @@ const Register = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="student@institution.edu"
+                      placeholder="student@institution.uob"
                       required
                       className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { hostelService } from '../../services/hostelService';
 import Modal from '../../components/Modal';
 import EnrollStudentModal from '../../components/EnrollStudentModal';
+import { toast } from 'react-toastify';
 import {
   BedDouble,
   UserPlus,
@@ -76,7 +77,7 @@ const RoomAllocation = () => {
         fetchRooms();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 
@@ -90,7 +91,7 @@ const RoomAllocation = () => {
         fetchRooms();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 
@@ -100,7 +101,7 @@ const RoomAllocation = () => {
       await hostelService.updateRoomStatus(room._id, newStatus);
       fetchRooms();
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 
@@ -199,9 +200,9 @@ const RoomAllocation = () => {
               className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
             >
               <option value="All">All Blocks</option>
-              <option value="Block A">Block A (North)</option>
-              <option value="Block B">Block B (South)</option>
-              <option value="Block C">Block C (International)</option>
+              <option value="Block A">Block A</option>
+              <option value="Block B">Block B</option>
+              <option value="Block C">Block C</option>
             </select>
           </div>
 

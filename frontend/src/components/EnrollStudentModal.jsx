@@ -24,7 +24,7 @@ const EnrollStudentModal = ({
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: 'Password@123',
+    password: '',
     phone: '',
     rollNumber: '',
     course: 'Computer Science & Engineering',
@@ -195,7 +195,7 @@ const EnrollStudentModal = ({
                 name="rollNumber"
                 value={formData.rollNumber}
                 onChange={handleChange}
-                placeholder="STU-2026-001 (auto if empty)"
+                placeholder="uobsac-2024-999 (auto if empty)"
                 className={inputClass}
               />
             </div>

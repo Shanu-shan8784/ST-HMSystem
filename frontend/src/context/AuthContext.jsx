@@ -1,82 +1,109 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import authService from '../services/authService';
 
 const AuthContext = createContext(null);
 
-export const demoCredentials = {
-  admin: { email: 'admin@hostel.com', password: 'admin123', label: 'Admin (Arthur Vance)' },
-  warden: { email: 'warden@hostel.com', password: 'warden123', label: 'Warden (Sarah Jenkins)' },
-  driver: { email: 'driver@hostel.com', password: 'driver123', label: 'Driver (Rajesh Sharma)' },
-  student: { email: 'student@hostel.com', password: 'student123', label: 'Student (Aarav Patel)' },
-};
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      localStorage.removeItem('user');
+      return null;
+    }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(false);
 
-  // Theme Management (Dark Mode)
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) return savedTheme;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
   });
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Re-verify session against live database on initial page load
+  // Revalidate a saved session when the app loads.
   useEffect(() => {
+    let cancelled = false;
+
     const rehydrateSession = async () => {
       const storedToken = localStorage.getItem('token');
       if (!storedToken) return;
 
       try {
         const res = await authService.getProfile();
-        if (res.success && res.user) {
+
+        if (!cancelled && res.success && res.user) {
           setUser(res.user);
           localStorage.setItem('user', JSON.stringify(res.user));
         }
       } catch (err) {
-        // Token expired or invalid
+        if (cancelled) return;
+
+        // Clear the session if the backend says the token is invalid.
         if (err.response?.status === 401) {
-          // axiosInstance will attempt silent refresh
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
         }
       }
     };
 
     rehydrateSession();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
   };
 
+  // Sends the form credentials to the backend login endpoint.
+  // The backend reads and checks its own .env/database values.
   const login = async (email, password) => {
     setIsLoading(true);
+
     try {
       const data = await authService.login({ email, password });
-      if (data.success) {
-        setUser(data.user);
-        setToken(data.token);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return { success: true, user: data.user };
+
+      if (!data.success || !data.user || !data.token) {
+        return {
+          success: false,
+          message: data.message || 'Invalid email or password.',
+        };
       }
-      return { success: false, message: data.message };
+
+      setUser(data.user);
+      setToken(data.token);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      return { success: true, user: data.user };
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Login failed';
-      return { success: false, message: msg };
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          'Login failed. Please try again.',
+      };
     } finally {
       setIsLoading(false);
     }
@@ -84,23 +111,41 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     setIsLoading(true);
+
     try {
       const data = await authService.register(userData);
-      if (data.success) {
-        if (data.pendingApproval) {
-          // Pending approval: do not auto-login
-          return { success: true, pendingApproval: true, message: data.message };
-        }
+
+      if (!data.success) {
+        return {
+          success: false,
+          message: data.message || 'Registration failed.',
+        };
+      }
+
+      if (data.pendingApproval) {
+        return {
+          success: true,
+          pendingApproval: true,
+          message: data.message,
+        };
+      }
+
+      if (data.user && data.token) {
         setUser(data.user);
         setToken(data.token);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        return { success: true, user: data.user };
       }
-      return { success: false, message: data.message };
+
+      return { success: true, user: data.user };
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Registration failed';
-      return { success: false, message: msg };
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          'Registration failed. Please try again.',
+      };
     } finally {
       setIsLoading(false);
     }
@@ -109,8 +154,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout();
-    } catch (e) {
-      // Ignore network failure on logout
+    } catch {
+      // Clear the local session even if the server cannot be reached.
     } finally {
       setUser(null);
       setToken(null);
@@ -119,38 +164,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const switchDemoRole = async (targetRole) => {
-    const creds = demoCredentials[targetRole];
-    if (!creds) return;
-    try {
-      return await login(creds.email, creds.password);
-    } catch (e) {
-      console.error('Demo switcher error:', e);
-    }
-  };
-
   const value = {
     user,
     token,
     role: user?.role || null,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated: Boolean(token && user),
     isLoading,
     theme,
     toggleTheme,
     login,
     register,
     logout,
-    switchDemoRole,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 };
 

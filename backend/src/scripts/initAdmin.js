@@ -1,16 +1,12 @@
 import connectDB from '../config/db.js';
-import User from '../models/User.model.js';
-import Admin from '../models/Admin.model.js';
+import User from '../models/User.model.js'; // Use User model for everything
 import AuditLog from '../models/AuditLog.model.js';
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt'; // Make sure bcrypt is imported if hashing manually
 
-/**
- * Enterprise CLI Admin Provisioning Script
- * Usage: node src/scripts/initAdmin.js [email] [password] [name] [department]
- */
 const provisionAdmin = async () => {
   console.log('========================================================');
-  console.log('   Enterprise Administrator Provisioning Utility        ');
+  console.log('    Enterprise Administrator Provisioning Utility        ');
   console.log('========================================================');
 
   const isConnected = await connectDB();
@@ -26,24 +22,24 @@ const provisionAdmin = async () => {
     const name = args[2] || process.env.ADMIN_NAME || 'Chief Administrator';
     const department = args[3] || process.env.ADMIN_DEPT || 'Campus Administration & Institutional Affairs';
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      if (existingUser.role === 'admin') {
-        console.log(`[INFO] Admin account '${email}' already exists. Updating credentials...`);
-        existingUser.password = password;
-        existingUser.isActive = true;
-        existingUser.approvalStatus = 'approved';
-        await existingUser.save();
-        console.log(`[SUCCESS] Admin '${email}' password and active status successfully updated.`);
-      } else {
-        console.error(`[ERROR] A non-admin user with email '${email}' already exists.`);
-        process.exit(1);
-      }
+    // 1. Always look up in the User collection
+    let adminUser = await User.findOne({ email });
+
+    if (adminUser) {
+      console.log(`[INFO] Account '${email}' already exists. Updating to Admin credentials...`);
+      adminUser.name = name;
+      adminUser.password = password; // If your model has a pre-save hash hook, assign directly
+      adminUser.role = 'admin';
+      adminUser.isActive = true;
+      adminUser.approvalStatus = 'approved';
+      await adminUser.save();
+      console.log(`[SUCCESS] Admin '${email}' successfully updated.`);
     } else {
-      const newAdmin = await Admin.create({
+      // 2. Create directly inside the User collection with role: 'admin'
+      adminUser = await User.create({
         name,
         email,
-        password,
+        password, // Pre-save hook will hash this, or hash manually if needed
         role: 'admin',
         phone: '+92 346 1234567',
         employeeId: 'ADM-1001',
@@ -55,20 +51,19 @@ const provisionAdmin = async () => {
       });
 
       await AuditLog.create({
-        userId: newAdmin._id,
-        userEmail: newAdmin.email,
+        userId: adminUser._id,
+        userEmail: adminUser.email,
         userRole: 'admin',
         action: 'ADMIN_PROVISIONED_VIA_CLI',
         targetResource: 'users',
-        targetId: newAdmin._id.toString(),
+        targetId: adminUser._id.toString(),
         details: { department, provisionMethod: 'CLI Script' },
       });
 
-      console.log(`[SUCCESS] Master Admin created successfully:`);
-      console.log(`  Name:        ${name}`);
-      console.log(`  Email:       ${email}`);
-      console.log(`  Role:        admin`);
-      console.log(`  Employee ID: ADM-1001`);
+      console.log(`[SUCCESS] Master Admin created successfully in User collection:`);
+      console.log(`  Name:         ${name}`);
+      console.log(`  Email:        ${email}`);
+      console.log(`  Role:         admin`);
     }
 
     console.log('========================================================');
@@ -82,4 +77,3 @@ const provisionAdmin = async () => {
 };
 
 provisionAdmin();
-

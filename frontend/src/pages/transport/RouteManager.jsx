@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { transportService } from '../../services/transportService';
 import authService from '../../services/authService';
 import Modal from '../../components/Modal';
+import { toast } from 'react-toastify';
 import {
   Bus,
   ChevronDown,
@@ -78,7 +79,7 @@ const RouteManager = () => {
         fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 
@@ -89,7 +90,7 @@ const RouteManager = () => {
         ...routeForm,
         stops: [
           { stopName: 'Skardu Main Bazaar', morningTime: '07:30 AM', eveningTime: '05:30 PM', lat: 35.2971, lng: 75.6341 },
-          { stopName: 'Baltistan University Gate', morningTime: '08:15 AM', eveningTime: '06:15 PM', lat: 35.2831, lng: 75.6541 },
+          { stopName: 'Alamdar Chowak', morningTime: '08:15 AM', eveningTime: '06:15 PM', lat: 35.2831, lng: 75.6541 },
         ],
       });
       if (res.success) {
@@ -98,7 +99,7 @@ const RouteManager = () => {
         fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   };
 
@@ -403,7 +404,7 @@ const RouteManager = () => {
               <input
                 type="tel"
                 required
-                placeholder="+91 98765 00000"
+                placeholder="+92 34765 00000"
                 value={routeForm.driverPhone}
                 onChange={(e) => setRouteForm({ ...routeForm, driverPhone: e.target.value })}
                 className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"

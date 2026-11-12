@@ -3,6 +3,7 @@ import { transportService } from '../../services/transportService';
 import { useAuth } from '../../context/AuthContext';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import { toast } from 'react-toastify';
 import {
   CreditCard,
   CheckCircle2,
@@ -68,7 +69,7 @@ const FeeStatus = () => {
         }, 1200);
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
       setIsProcessing(false);
     }
   };
@@ -142,7 +143,7 @@ const FeeStatus = () => {
           ) : (
             <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
               <CheckCircle2 className="w-4 h-4" />
-              Paid via {f.paymentMethod?.split(' ')[0] || 'UPI'}
+              Paid via {f.paymentMethod?.split(' ')[0] || 'easypaisa'}
             </span>
           )}
         </div>
@@ -237,8 +238,7 @@ const FeeStatus = () => {
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
               >
-                <option value="UPI (Instant PhonePe / GPay / Paytm)">UPI (Instant PhonePe / GPay / Paytm)</option>
-                <option value="NetBanking (HDFC / ICICI / SBI)">NetBanking (HDFC / ICICI / SBI)</option>
+                <option value="easypaisa">easypaisa</option>
                 <option value="Credit / Debit Card (Visa / Mastercard)">Credit / Debit Card (Visa / Mastercard)</option>
               </select>
             </div>
